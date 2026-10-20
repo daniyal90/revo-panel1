@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hani SMS // Revo Panel - SMS Traffic Monetisation</title>
+    <title>Revo Panel - Enterprise SMS Traffic Monetization Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -25,15 +25,15 @@
 <body class="min-h-screen flex flex-col justify-between">
 
     <!-- TOP TELEMETRY BAR -->
-    <div class="bg-gray-950 border-b border-gray-800 text-xs py-2 px-4 flex flex-wrap justify-between items-center text-gray-400">
-        <div class="flex items-center space-x-6 overflow-x-auto py-1">
-            <span class="flex items-center text-emerald-400 font-semibold"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-2"></span>LIVE CORRIDORS</span>
-            <span>US-1 [T-Mobile]: <strong class="text-white">0.0041 USDT</strong> <span class="text-emerald-400">▲99.8%</span></span>
-            <span>UK-44 [Vodafone]: <strong class="text-white">0.0120 EUR</strong> <span class="text-emerald-400">▲99.4%</span></span>
-            <span>DE-49 [O2 Core]: <strong class="text-white">0.0185 EUR</strong> <span class="text-rose-400">▼99.1%</span></span>
-            <span>FR-33 [Orange Tier-1]: <strong class="text-emerald-400">69+ CARRIERS ONLINE</strong></span>
+    <div class="bg-gray-950 border-b border-gray-800 text-xs py-2 px-6 flex justify-between items-center text-gray-400">
+        <div class="flex items-center space-x-4">
+            <span class="flex items-center text-emerald-400 font-semibold">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping mr-2"></span>SYSTEM ONLINE
+            </span>
+            <span class="text-gray-600">|</span>
+            <span>CARRIER TERMINATION ENGINE</span>
         </div>
-        <div class="text-gray-500 text-right">LATENCY: &lt;18ms | SMPP v3.4</div>
+        <div class="text-gray-500 text-right">LATENCY: &lt;18ms | SMPP v3.4 SECURE</div>
     </div>
 
     <!-- MAIN NAVBAR -->
@@ -45,15 +45,14 @@
                 </div>
                 <div>
                     <span class="text-xl font-extrabold tracking-tight text-white">REVO <span class="text-cyan-400">PANEL</span></span>
-                    <span class="block text-[10px] tracking-widest text-gray-400 uppercase font-semibold">Hani SMS Termination Engine</span>
+                    <span class="block text-[10px] tracking-widest text-gray-400 uppercase font-semibold">Traffic Monetization Platform</span>
                 </div>
             </div>
 
             <div class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
-                <a href="#how-it-pays" class="hover:text-cyan-400 transition">How it pays</a>
-                <a href="#why-us" class="hover:text-cyan-400 transition">Why us</a>
-                <a href="#rates" class="hover:text-cyan-400 transition">Live Rates</a>
-                <a href="#faq" class="hover:text-cyan-400 transition">FAQ</a>
+                <a href="#about" class="hover:text-cyan-400 transition">How It Works</a>
+                <a href="#features" class="hover:text-cyan-400 transition">Platform Features</a>
+                <a href="#register" class="hover:text-cyan-400 transition">Get Started</a>
             </div>
 
             <div class="flex items-center space-x-4">
@@ -69,7 +68,7 @@
         <div class="lg:col-span-7 space-y-6">
             <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-800/50 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
                 <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
-                <span>IPRN &bull; SMS Traffic Monetisation</span>
+                <span>SMS Traffic Monetisation</span>
             </div>
 
             <h1 class="text-5xl sm:text-6xl font-black text-white leading-none tracking-tight">
@@ -78,82 +77,38 @@
             </h1>
 
             <p class="text-lg text-gray-400 max-w-xl leading-relaxed">
-                Live number ranges across 69 destinations. Route your A2P, OTP, or wholesale volume onto them and every delivered message is counted, priced, and paid out automatically every Tuesday.
+                High-capacity global carrier termination infrastructure. Route your A2P, OTP, and wholesale traffic with maximum delivery speed and direct revenue settlements.
             </p>
 
             <!-- STATS COUNTERS -->
             <div class="grid grid-cols-3 gap-6 pt-4 border-t border-gray-800/80">
                 <div>
-                    <span class="block text-2xl font-black text-white">69+</span>
-                    <span class="text-xs text-gray-400 font-medium">Destinations</span>
+                    <span class="block text-2xl font-black text-white">Global</span>
+                    <span class="text-xs text-gray-400 font-medium">Coverage</span>
                 </div>
                 <div>
                     <span class="block text-2xl font-black text-white">&lt; 8ms</span>
-                    <span class="text-xs text-gray-400 font-medium">DLR Webhook Loop</span>
+                    <span class="text-xs text-gray-400 font-medium">Real-time Webhook</span>
                 </div>
                 <div>
                     <span class="block text-2xl font-black text-emerald-400">Weekly</span>
-                    <span class="text-xs text-gray-400 font-medium">USDT / Wire Settlements</span>
+                    <span class="text-xs text-gray-400 font-medium">Settlements</span>
                 </div>
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: LIVE TRAFFIC WIDGET -->
-        <div class="lg:col-span-5">
-            <div class="glass-panel rounded-2xl p-6 glow-cyan space-y-6">
-                <div class="flex justify-between items-center border-b border-gray-800 pb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
-                        <span class="text-xs font-bold uppercase tracking-wider text-gray-300">Live Traffic Monitor</span>
-                    </div>
-                    <span class="text-xs font-mono text-gray-500">UTC REALTIME</span>
-                </div>
-
-                <!-- SIMULATED GRAPH GRAPHIC -->
-                <div class="h-32 w-full bg-gray-950/60 rounded-xl border border-gray-800/80 p-3 flex items-end justify-between space-x-1">
-                    <div class="w-full bg-cyan-500/20 hover:bg-cyan-500/40 rounded-t h-[40%] transition-all"></div>
-                    <div class="w-full bg-cyan-500/20 hover:bg-cyan-500/40 rounded-t h-[55%] transition-all"></div>
-                    <div class="w-full bg-cyan-500/20 hover:bg-cyan-500/40 rounded-t h-[35%] transition-all"></div>
-                    <div class="w-full bg-cyan-500/20 hover:bg-cyan-500/40 rounded-t h-[70%] transition-all"></div>
-                    <div class="w-full bg-cyan-500/20 hover:bg-cyan-500/40 rounded-t h-[90%] transition-all"></div>
-                    <div class="w-full bg-cyan-500/30 hover:bg-cyan-500/50 rounded-t h-[65%] transition-all"></div>
-                    <div class="w-full bg-cyan-500/40 hover:bg-cyan-500/60 rounded-t h-[80%] transition-all"></div>
-                    <div class="w-full bg-cyan-400 rounded-t h-[95%] shadow-lg shadow-cyan-500/50"></div>
-                </div>
-
-                <!-- RANGES LIST -->
-                <div class="space-y-3 text-sm">
-                    <span class="text-xs font-bold uppercase text-gray-400 tracking-wider">Top Active Ranges</span>
-                    <div class="flex justify-between items-center p-2.5 rounded-lg bg-gray-900/60 border border-gray-800">
-                        <span class="font-medium text-gray-200">Malaysia XOX LX 27Mar</span>
-                        <span class="text-xs font-mono font-bold text-emerald-400">0.0145 USDT/SMS</span>
-                    </div>
-                    <div class="flex justify-between items-center p-2.5 rounded-lg bg-gray-900/60 border border-gray-800">
-                        <span class="font-medium text-gray-200">Nigeria LX 03Jun</span>
-                        <span class="text-xs font-mono font-bold text-emerald-400">0.0210 USDT/SMS</span>
-                    </div>
-                    <div class="flex justify-between items-center p-2.5 rounded-lg bg-gray-900/60 border border-gray-800">
-                        <span class="font-medium text-gray-200">Algeria LX 12May</span>
-                        <span class="text-xs font-mono font-bold text-emerald-400">0.0180 USDT/SMS</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- REGISTER SECTION (CLEAN CLIENT REGISTRATION) -->
-    <section id="register" class="bg-gray-950 border-t border-gray-800 py-20">
-        <div class="max-w-md mx-auto px-6">
-            <div class="glass-panel p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6">
+        <!-- RIGHT COLUMN: CLIENT REGISTRATION CARD -->
+        <div class="lg:col-span-5" id="register">
+            <div class="glass-panel p-8 rounded-2xl border border-gray-800 shadow-2xl space-y-6 glow-cyan">
                 <div class="text-center space-y-2">
                     <h2 class="text-2xl font-bold text-white">Create Client Account</h2>
-                    <p class="text-sm text-gray-400">Start monetising your SMS traffic within minutes.</p>
+                    <p class="text-sm text-gray-400">Register to start routing your traffic.</p>
                 </div>
 
                 <form class="space-y-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-400 mb-1">Full Name</label>
-                        <input type="text" placeholder="John Doe" class="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white focus:outline-none focus:border-cyan-500 text-sm">
+                        <input type="text" placeholder="Your Name" class="w-full px-4 py-3 bg-gray-900 border border-gray-800 rounded-lg text-white focus:outline-none focus:border-cyan-500 text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-400 mb-1">Email Address</label>
