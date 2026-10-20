@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hani SMS // Architecture &amp; Prisma Specification</title>
+<!-- Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;family=Space+Grotesk:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            obsidian: "#020617",
+            surface: "#0c1324",
+            "surface-subtle": "rgba(15, 23, 42, 0.75)",
+            "surface-glass": "rgba(30, 41, 59, 0.45)",
+            "surface-bright": "#1e293b",
+            primary: "#10b981",
+            "primary-glow": "rgba(16, 185, 129, 0.18)",
+            secondary: "#06b6d4",
+            "secondary-glow": "rgba(6, 182, 212, 0.15)",
+            "panel-border": "rgba(51, 65, 85, 0.6)",
+            "neon-border": "rgba(16, 185, 129, 0.35)",
+            textBright: "#f8fafc",
+            textMuted: "#94a3b8",
+            textDim: "#475569"
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+            display: ["Space Grotesk", "sans-serif"]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    @layer base {
+      html, body {
+        background-color: #020617;
+        color: #dce1fb;
+        margin: 0;
+        padding: 0;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #020617;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 9999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #334155;
+      }
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(51, 65, 85, 0.65);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(16, 185, 129, 0.45);
+      box-shadow: 0 12px 35px -8px rgba(16, 185, 129, 0.15);
+    }
+    .neon-pill {
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+    }
+    .code-syntax .kw { color: #06b6d4; font-weight: 600; }
+    .code-syntax .type { color: #10b981; }
+    .code-syntax .str { color: #f59e0b; }
+    .code-syntax .fn { color: #38bdf8; }
+    .code-syntax .comment { color: #64748b; font-style: italic; }
+    .code-syntax .prop { color: #cbd5e1; }
+    .code-syntax .punct { color: #94a3b8; }
+    .code-syntax .attr { color: #a78bfa; }
+  </style>
+</head>
+<body class="bg-obsidian font-sans antialiased text-slate-200 selection:bg-primary/20 selection:text-primary min-h-screen flex flex-col justify-between">
+<!-- Top Realtime Carrier Ticker -->
+<div class="fixed top-0 left-0 right-0 z-50 bg-[#020617]/90 backdrop-blur-md border-b border-slate-800/80">
+<div class="h-8 px-4 flex items-center justify-between text-xs font-mono border-b border-slate-900/60 overflow-hidden">
+<div class="flex items-center gap-2 shrink-0">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse shadow-[0_0_8px_#10b981]"></span>
+<span class="text-primary font-bold tracking-wider text-[11px] uppercase">LIVE TELECOM CORRIDORS:</span>
+</div>
+<div class="flex items-center gap-6 overflow-hidden whitespace-nowrap text-slate-400 text-[11px]">
+<div class="flex items-center gap-1.5"><span class="text-cyan-400 font-semibold">US-1 [T-Mobile]</span><span>0.0041 USDT</span><span class="text-emerald-400 font-medium flex items-center"><span class="material-symbols-outlined text-[12px]">trending_up</span>99.8%</span></div>
+<div class="flex items-center gap-1.5"><span class="text-cyan-400 font-semibold">UK-44 [Vodafone]</span><span>0.0120 EUR</span><span class="text-emerald-400 font-medium flex items-center"><span class="material-symbols-outlined text-[12px]">trending_up</span>99.4%</span></div>
+<div class="flex items-center gap-1.5"><span class="text-cyan-400 font-semibold">DE-49 [O2 Core]</span><span>0.0185 EUR</span><span class="text-slate-300 font-medium flex items-center"><span class="material-symbols-outlined text-[12px]">horizontal_rule</span>99.1%</span></div>
+<div class="flex items-center gap-1.5"><span class="text-cyan-400 font-semibold">FR-33 [Orange Tier-1]</span><span>0.0162 EUR</span><span class="text-emerald-400 font-medium flex items-center"><span class="material-symbols-outlined text-[12px]">trending_up</span>99.7%</span></div>
+<div class="flex items-center gap-1.5"><span class="text-cyan-400 font-semibold">SG-65 [Singtel Direct]</span><span>0.0095 USD</span><span class="text-emerald-400 font-medium flex items-center"><span class="material-symbols-outlined text-[12px]">trending_up</span>99.9%</span></div>
+</div>
+<div class="hidden sm:flex items-center gap-2 text-slate-400 text-[11px] shrink-0 font-medium">
+<span class="text-primary">69+ CARRIERS ONLINE</span>
+<span class="text-slate-600">•</span>
+<span class="text-slate-300 font-mono">LATENCY: &lt;18ms</span>
+</div>
+</div>
+<!-- Main Navigation Bar -->
+<header class="h-16 px-4 md:px-8 flex items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<!-- Revo Panel Luxury Logo -->
+<a class="flex items-center gap-2.5 group" href="#">
+<div class="h-9 w-9 rounded-lg bg-gradient-to-tr from-emerald-500/20 via-cyan-500/20 to-emerald-400/10 border border-emerald-500/40 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.25)] group-hover:border-emerald-400 transition-colors">
+<span class="material-symbols-outlined text-primary text-[20px]">hub</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-display font-bold text-lg tracking-tight text-white group-hover:text-emerald-400 transition-colors">HANI SMS</span>
+<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-primary/10 text-primary border border-primary/20">REVO PANEL</span>
+</div>
+<span class="text-[10px] font-mono text-slate-400 -mt-0.5 tracking-wider">CARRIER TERMINATION ENGINE</span>
+</div>
+</a>
+<!-- System Pill -->
+<div class="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md bg-slate-900/80 border border-slate-800 text-[11px] font-mono text-slate-300">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+<span>ENTERPRISE ARCHITECTURE v4.12</span>
+</div>
+</div>
+<!-- Center Navigation Links -->
+<nav class="hidden lg:flex items-center gap-1 p-1 rounded-lg bg-slate-900/70 border border-slate-800 text-xs font-medium text-slate-300">
+<a class="px-3 py-1.5 rounded-md hover:text-white hover:bg-slate-800/60 transition-colors" href="#">Overview &amp; Rates</a>
+<a class="px-3 py-1.5 rounded-md hover:text-white hover:bg-slate-800/60 transition-colors" href="#">Auth Portal</a>
+<a class="px-3 py-1.5 rounded-md hover:text-white hover:bg-slate-800/60 transition-colors" href="#">Admin Console &amp; Team Gating</a>
+<a class="px-3 py-1.5 rounded-md bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold shadow-sm" href="#">API &amp; Prisma Architecture</a>
+</nav>
+<!-- Right Header Actions -->
+<div class="flex items-center gap-3">
+<!-- Download Pack Trigger (Header Fast Action) -->
+<button class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-semibold transition-all shadow-[0_0_12px_rgba(16,185,129,0.2)]" onclick="downloadArchitectureFile('all')">
+<span class="material-symbols-outlined text-[16px]">folder_zip</span>
+<span>Download Stack (.ZIP)</span>
+</button>
+<!-- Balance / Wallet Currency -->
+<div class="flex items-center gap-1.5 bg-slate-900/80 border border-slate-800 px-2.5 py-1 rounded-lg text-xs font-mono">
+<span class="material-symbols-outlined text-slate-400 text-[16px]">account_balance_wallet</span>
+<span class="text-slate-300 font-semibold">USDT</span>
+<span class="text-emerald-400">●</span>
+</div>
+<!-- User Profile Avatar -->
+<div class="h-8 w-8 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 flex items-center justify-center text-primary shadow-inner">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+</div>
+</header>
+</div>
+<!-- Main Hero Context & Technical Spec Header -->
+<main class="w-full pt-28 pb-16 flex-1 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+<!-- Top Quick File Download Bar & Dropdown Modal -->
+<div class="glass-card rounded-xl p-3 sm:p-4 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-3 shadow-[0_4px_20px_rgba(16,185,129,0.12)]">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-lg bg-emerald-500/15 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-mono font-bold text-white flex items-center gap-1.5">
+<span>DIRECT FILE DOWNLOAD DISPATCHER</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">CLIENT-SIDE BLOB</span>
+</span>
+<span class="text-[11px] text-slate-400">Instant direct download without redirects: .prisma, .json bundle, NextAuth guards &amp; audit modules</span>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-medium flex items-center gap-1.5 transition-all hover:border-emerald-400" onclick="downloadArchitectureFile('prisma')">
+<span class="material-symbols-outlined text-[15px]">code</span>
+<span>prisma/schema.prisma</span>
+</button>
+<button class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-400 border border-cyan-500/30 text-xs font-mono font-medium flex items-center gap-1.5 transition-all hover:border-cyan-400" onclick="downloadArchitectureFile('nextauth')">
+<span class="material-symbols-outlined text-[15px]">security</span>
+<span>NextAuth Guard (.ts)</span>
+</button>
+<button class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-500/30 text-xs font-mono font-medium flex items-center gap-1.5 transition-all hover:border-amber-400" onclick="downloadArchitectureFile('audit')">
+<span class="material-symbols-outlined text-[15px]">description</span>
+<span>Audit Logger (.js)</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 text-emerald-300 border border-emerald-400/50 text-xs font-mono font-bold flex items-center gap-1.5 transition-all shadow-[0_0_12px_rgba(16,185,129,0.25)]" onclick="downloadArchitectureFile('bundle')">
+<span class="material-symbols-outlined text-[16px]">inventory_2</span>
+<span>Backend Bundle (.JSON)</span>
+</button>
+</div>
+</div>
+<!-- Top Hero Banner with Glassmorphism and Neon Accents -->
+<section class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+<!-- Glow ambient backdrop -->
+<div class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -bottom-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+<div class="space-y-3 max-w-2xl">
+<div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-mono tracking-wider">
+<span class="material-symbols-outlined text-[14px]">terminal</span>
+<span>NEXT.JS 14 APP ROUTER • POSTGRESQL ACCELERATE • ZERO-LEAK CONCURRENCY</span>
+</div>
+<h1 class="text-2xl sm:text-3xl lg:text-4xl font-display font-bold text-white tracking-tight">
+            Prisma Engine &amp; Carrier Telemetry Architecture
+          </h1>
+<p class="text-sm sm:text-base text-slate-300 font-sans leading-relaxed">
+            Enterprise database schema blueprints, deterministic NextAuth authentication guards, and atomic Postgres serializable transaction handlers enforcing strict 5-seat parent-child team boundaries.
+          </p>
+</div>
+<!-- Prominent Codebase Download CTA Button (Requested Item #3) -->
+<div class="w-full lg:w-auto flex flex-col sm:flex-row items-stretch lg:items-center gap-3 shrink-0">
+<button class="px-5 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-display font-bold text-sm tracking-wide transition-all shadow-[0_0_25px_rgba(16,185,129,0.35)] flex items-center justify-center gap-2.5 cursor-pointer" onclick="downloadArchitectureFile('all')">
+<span class="material-symbols-outlined text-[20px] font-bold">download_for_offline</span>
+<span>Download Full Codebase &amp; Architecture Pack (.ZIP / .JSON)</span>
+</button>
+</div>
+</div>
+<!-- Quick Metrics Bar below Hero -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mt-6 pt-6 border-t border-slate-800/80">
+<div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col">
+<span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">PostgreSQL Pool</span>
+<span class="text-lg font-mono font-bold text-emerald-400 mt-1 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">database</span> 64 Connections
+          </span>
+</div>
+<div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col">
+<span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Team Slot Limit</span>
+<span class="text-lg font-mono font-bold text-cyan-400 mt-1 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">badge</span> 5 Member Cap
+          </span>
+</div>
+<div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col">
+<span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">Session Security</span>
+<span class="text-lg font-mono font-bold text-white mt-1 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">key</span> JWT + Approval Gate
+          </span>
+</div>
+<div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col">
+<span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest">DLR Webhook Loop</span>
+<span class="text-lg font-mono font-bold text-emerald-400 mt-1 flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">sync_alt</span> &lt; 8ms Ingestion
+          </span>
+</div>
+</div>
+</section>
+<!-- Section 1: Production Prisma Schema Specification -->
+<section class="glass-card rounded-2xl overflow-hidden border border-slate-800/80 shadow-2xl">
+<!-- Terminal Header Bar -->
+<div class="px-5 py-3.5 bg-slate-900/90 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+<span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+<span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+</div>
+<div class="h-4 w-[1px] bg-slate-700"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-emerald-400 text-[18px]">data_object</span>
+<span class="font-mono text-xs font-semibold text-white">prisma/schema.prisma</span>
+<span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">PRODUCTION SPEC</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-xs font-mono text-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer" onclick="copySnippet('prisma-spec-code', 'prisma-btn-label')">
+<span class="material-symbols-outlined text-[15px]">content_copy</span>
+<span id="prisma-btn-label">Copy Prisma Schema</span>
+</button>
+<button class="p-1.5 rounded-lg bg-slate-800/90 hover:bg-emerald-500/20 hover:text-emerald-300 hover:border-emerald-500/40 border border-slate-700 text-slate-200 transition-colors text-xs font-mono cursor-pointer" onclick="downloadArchitectureFile('prisma')" title="Download schema.prisma file">
+<span class="material-symbols-outlined text-[16px]">file_download</span>
+</button>
+</div>
+</div>
+<!-- Code Container with High-Fidelity Syntax Highlighting -->
+<div class="p-4 sm:p-6 bg-[#020617]/95 overflow-x-auto max-h-[500px]">
+<pre class="font-mono text-xs leading-relaxed code-syntax select-all" id="prisma-spec-code"><span class="comment">// =========================================================================</span>
+<span class="comment">// HANI SMS CARRIER TERMINATION ENGINE - PRODUCTION PRISMA SPECIFICATION</span>
+<span class="comment">// Target: PostgreSQL 16+ with Connection Pooling &amp; Row-Level Security</span>
+<span class="comment">// =========================================================================</span>
+
+<span class="kw">datasource</span> <span class="type">db</span> {
+  <span class="prop">provider</span>  = <span class="str">"postgresql"</span>
+  <span class="prop">url</span>       = <span class="fn">env</span>(<span class="str">"DATABASE_URL"</span>)
+  <span class="prop">directUrl</span> = <span class="fn">env</span>(<span class="str">"DIRECT_URL"</span>)
+}
+
+<span class="kw">generator</span> <span class="type">client</span> {
+  <span class="prop">provider</span>        = <span class="str">"prisma-client-js"</span>
+  <span class="prop">previewFeatures</span> = [<span class="str">"fullTextSearch"</span>, <span class="str">"relationJoins"</span>]
+}
+
+<span class="comment">// --- ENUMS FOR STRICT TYPING &amp; ACCESS CONTROL ---</span>
+<span class="kw">enum</span> <span class="type">Role</span> {
+  <span class="prop">SUPER_ADMIN</span>
+  <span class="prop">ADMIN</span>
+  <span class="prop">TEAM_MEMBER</span>
+  <span class="prop">CLIENT</span>
+}
+
+<span class="kw">enum</span> <span class="type">AccountStatus</span> {
+  <span class="prop">PENDING</span>
+  <span class="prop">APPROVED</span>
+  <span class="prop">REJECTED</span>
+  <span class="prop">SUSPENDED</span>
+}
+
+<span class="kw">enum</span> <span class="type">RangeStatus</span> {
+  <span class="prop">ACTIVE</span>
+  <span class="prop">DEGRADED</span>
+  <span class="prop">PAUSED</span>
+}
+
+<span class="kw">enum</span> <span class="type">PaymentMethod</span> {
+  <span class="prop">USDT_TRC20</span>
+  <span class="prop">USDT_ERC20</span>
+  <span class="prop">WIRE_SWIFT</span>
+  <span class="prop">WISE</span>
+}
+
+<span class="kw">enum</span> <span class="type">PayoutStatus</span> {
+  <span class="prop">PENDING_AUDIT</span>
+  <span class="prop">PROCESSING</span>
+  <span class="prop">SETTLED</span>
+  <span class="prop">REJECTED</span>
+}
+
+<span class="kw">enum</span> <span class="type">DeliveryStatus</span> {
+  <span class="prop">DELIVRD</span>
+  <span class="prop">EXPIRED</span>
+  <span class="prop">UNDELIV</span>
+  <span class="prop">REJECTD</span>
+}
+
+<span class="comment">// --- CORE USER MODEL &amp; SELF-REFERENTIAL TEAM HIERARCHY ---</span>
+<span class="kw">model</span> <span class="type">User</span> {
+  <span class="prop">id</span>           <span class="type">String</span>        <span class="attr">@id @default(cuid())</span>
+  <span class="prop">name</span>         <span class="type">String?</span>
+  <span class="prop">email</span>        <span class="type">String</span>        <span class="attr">@unique</span>
+  <span class="prop">passwordHash</span> <span class="type">String</span>
+  <span class="prop">role</span>         <span class="type">Role</span>          <span class="attr">@default(CLIENT)</span>
+  <span class="prop">status</span>       <span class="type">AccountStatus</span> <span class="attr">@default(PENDING)</span>
+  <span class="prop">apiKey</span>       <span class="type">String?</span>       <span class="attr">@unique @default(uuid())</span>
+
+  <span class="comment">// Team Gating Hierarchy (5 members max per Parent User)</span>
+  <span class="prop">parentId</span>     <span class="type">String?</span>
+  <span class="prop">parent</span>       <span class="type">User?</span>         <span class="attr">@relation("TeamHierarchy", fields: [parentId], references: [id], onDelete: Cascade)</span>
+  <span class="prop">children</span>     <span class="type">User[]</span>        <span class="attr">@relation("TeamHierarchy")</span>
+
+  <span class="comment">// Relationships</span>
+  <span class="prop">numberRanges</span> <span class="type">NumberRange[]</span>
+  <span class="prop">payouts</span>      <span class="type">Payout[]</span>
+  <span class="prop">auditLogs</span>    <span class="type">AuditLog[]</span>
+
+  <span class="prop">createdAt</span>    <span class="type">DateTime</span>      <span class="attr">@default(now())</span>
+  <span class="prop">updatedAt</span>    <span class="type">DateTime</span>      <span class="attr">@updatedAt</span>
+
+  <span class="attr">@@index([parentId, role])</span>
+  <span class="attr">@@index([email, status])</span>
+  <span class="attr">@@index([apiKey])</span>
+  <span class="attr">@@map("users")</span>
+}
+
+<span class="comment">// --- CARRIER NUMBER RANGES ---</span>
+<span class="kw">model</span> <span class="type">NumberRange</span> {
+  <span class="prop">id</span>             <span class="type">String</span>      <span class="attr">@id @default(cuid())</span>
+  <span class="prop">userId</span>         <span class="type">String</span>
+  <span class="prop">user</span>           <span class="type">User</span>        <span class="attr">@relation(fields: [userId], references: [id], onDelete: Cascade)</span>
+  <span class="prop">country</span>        <span class="type">String</span>
+  <span class="prop">prefix</span>         <span class="type">String</span>
+  <span class="prop">ratePerSms</span>     <span class="type">Decimal</span>     <span class="attr">@db.Decimal(10, 4)</span>
+  <span class="prop">totalDelivered</span> <span class="type">BigInt</span>      <span class="attr">@default(0)</span>
+  <span class="prop">status</span>         <span class="type">RangeStatus</span> <span class="attr">@default(ACTIVE)</span>
+
+  <span class="prop">smsLogs</span>        <span class="type">SmsLog[]</span>
+  <span class="prop">createdAt</span>      <span class="type">DateTime</span>    <span class="attr">@default(now())</span>
+  <span class="prop">updatedAt</span>      <span class="type">DateTime</span>    <span class="attr">@updatedAt</span>
+
+  <span class="attr">@@index([userId, status])</span>
+  <span class="attr">@@index([prefix])</span>
+  <span class="attr">@@map("number_ranges")</span>
+}
+
+<span class="comment">// --- HIGH FREQUENCY DLR WEBHOOK SMS LOGS ---</span>
+<span class="kw">model</span> <span class="type">SmsLog</span> {
+  <span class="prop">id</span>          <span class="type">String</span>         <span class="attr">@id @default(cuid())</span>
+  <span class="prop">rangeId</span>     <span class="type">String</span>
+  <span class="prop">range</span>       <span class="type">NumberRange</span>    <span class="attr">@relation(fields: [rangeId], references: [id], onDelete: Cascade)</span>
+  <span class="prop">senderId</span>    <span class="type">String</span>
+  <span class="prop">recipient</span>   <span class="type">String</span>
+  <span class="prop">totalPayout</span> <span class="type">Decimal</span>        <span class="attr">@db.Decimal(10, 4)</span>
+  <span class="prop">status</span>      <span class="type">DeliveryStatus</span> <span class="attr">@default(DELIVRD)</span>
+  <span class="prop">timestamp</span>   <span class="type">DateTime</span>       <span class="attr">@default(now())</span>
+
+  <span class="attr">@@index([rangeId, timestamp])</span>
+  <span class="attr">@@index([senderId])</span>
+  <span class="attr">@@map("sms_logs")</span>
+}
+
+<span class="comment">// --- REVENUE SETTLEMENTS &amp; PAYOUTS ---</span>
+<span class="kw">model</span> <span class="type">Payout</span> {
+  <span class="prop">id</span>            <span class="type">String</span>        <span class="attr">@id @default(cuid())</span>
+  <span class="prop">userId</span>        <span class="type">String</span>
+  <span class="prop">user</span>          <span class="type">User</span>          <span class="attr">@relation(fields: [userId], references: [id], onDelete: Cascade)</span>
+  <span class="prop">amount</span>        <span class="type">Decimal</span>       <span class="attr">@db.Decimal(14, 4)</span>
+  <span class="prop">paymentMethod</span> <span class="type">PaymentMethod</span> <span class="attr">@default(USDT_TRC20)</span>
+  <span class="prop">walletAddress</span> <span class="type">String?</span>
+  <span class="prop">status</span>        <span class="type">PayoutStatus</span>  <span class="attr">@default(PENDING_AUDIT)</span>
+  <span class="prop">settledAt</span>     <span class="type">DateTime?</span>
+  <span class="prop">createdAt</span>     <span class="type">DateTime</span>      <span class="attr">@default(now())</span>
+
+  <span class="attr">@@index([userId, status])</span>
+  <span class="attr">@@map("payouts")</span>
+}
+
+<span class="comment">// --- ENTERPRISE AUDIT TRAIL ---</span>
+<span class="kw">model</span> <span class="type">AuditLog</span> {
+  <span class="prop">id</span>        <span class="type">String</span>   <span class="attr">@id @default(cuid())</span>
+  <span class="prop">userId</span>    <span class="type">String</span>
+  <span class="prop">user</span>      <span class="type">User</span>     <span class="attr">@relation(fields: [userId], references: [id], onDelete: Cascade)</span>
+  <span class="prop">action</span>    <span class="type">String</span>
+  <span class="prop">metadata</span>  <span class="type">Json?</span>
+  <span class="prop">ipAddress</span> <span class="type">String?</span>
+  <span class="prop">createdAt</span> <span class="type">DateTime</span> <span class="attr">@default(now())</span>
+
+  <span class="attr">@@index([userId, createdAt])</span>
+  <span class="attr">@@map("audit_logs")</span>
+}</pre>
+</div>
+</section>
+<!-- Section 2 & 3: Production Code Implementation Bento -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+<!-- Module A: Atomic Team Member Limit (5/5 Cap) Handler -->
+<section class="glass-card rounded-2xl overflow-hidden border border-slate-800/80 shadow-xl flex flex-col">
+<div class="px-5 py-3.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-cyan-400 text-[18px]">group_add</span>
+<div>
+<span class="font-mono text-xs font-semibold text-white">/app/api/admin/team/route.ts</span>
+<span class="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20">ATOMIC TX</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer" onclick="copySnippet('team-code-block', 'team-btn-label')">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span id="team-btn-label">Copy</span>
+</button>
+<button class="p-1 rounded-md bg-slate-800 hover:bg-cyan-500/20 hover:text-cyan-300 border border-slate-700 text-slate-300 transition-colors cursor-pointer" onclick="downloadArchitectureFile('teamRoute')" title="Download route.ts">
+<span class="material-symbols-outlined text-[14px]">file_download</span>
+</button>
+</div>
+</div>
+<div class="p-3 bg-slate-950/40 border-b border-slate-800/60 text-xs text-slate-400 font-sans">
+          Runs within a PostgreSQL serializable transaction isolation bracket to prevent race-condition concurrency overages during bulk invitations.
+        </div>
+<div class="p-4 bg-[#020617]/95 overflow-x-auto max-h-[420px]">
+<pre class="font-mono text-xs leading-relaxed code-syntax select-all" id="team-code-block"><span class="kw">import</span> { <span class="type">NextResponse</span> } <span class="kw">from</span> <span class="str">'next/server'</span>;
+<span class="kw">import</span> { <span class="fn">getServerSession</span> } <span class="kw">from</span> <span class="str">'next-auth'</span>;
+<span class="kw">import</span> { <span class="type">prisma</span> } <span class="kw">from</span> <span class="str">'@/lib/prisma'</span>;
+<span class="kw">import</span> { <span class="prop">authOptions</span> } <span class="kw">from</span> <span class="str">'@/lib/auth'</span>;
+<span class="kw">import</span> <span class="prop">bcrypt</span> <span class="kw">from</span> <span class="str">'bcryptjs'</span>;
+
+<span class="comment">// STRICT 5-MEMBER CAP ENFORCED BY SERIALIZABLE ISOLATION</span>
+<span class="kw">const</span> <span class="prop">MAX_TEAM_SEATS</span> = 5;
+
+<span class="kw">export async function</span> <span class="fn">POST</span>(<span class="prop">req</span>: <span class="type">Request</span>) {
+  <span class="kw">const</span> <span class="prop">session</span> = <span class="kw">await</span> <span class="fn">getServerSession</span>(<span class="prop">authOptions</span>);
+
+  <span class="kw">if</span> (!<span class="prop">session</span>?.<span class="prop">user</span>?.<span class="prop">id</span>) {
+    <span class="kw">return</span> <span class="type">NextResponse</span>.<span class="fn">json</span>({ <span class="prop">error</span>: <span class="str">'UNAUTHENTICATED'</span> }, { <span class="prop">status</span>: 401 });
+  }
+
+  <span class="kw">if</span> (![<span class="str">'ADMIN'</span>, <span class="str">'SUPER_ADMIN'</span>].<span class="fn">includes</span>(<span class="prop">session</span>.<span class="prop">user</span>.<span class="prop">role</span>)) {
+    <span class="kw">return</span> <span class="type">NextResponse</span>.<span class="fn">json</span>({ <span class="prop">error</span>: <span class="str">'FORBIDDEN_PRIVILEGE_REQUIRED'</span> }, { <span class="prop">status</span>: 403 });
+  }
+
+  <span class="kw">const</span> { <span class="prop">name</span>, <span class="prop">email</span>, <span class="prop">password</span> } = <span class="kw">await</span> <span class="prop">req</span>.<span class="fn">json</span>();
+
+  <span class="kw">if</span> (!<span class="prop">email</span> || !<span class="prop">password</span>) {
+    <span class="kw">return</span> <span class="type">NextResponse</span>.<span class="fn">json</span>({ <span class="prop">error</span>: <span class="str">'EMAIL_AND_PASSWORD_REQUIRED'</span> }, { <span class="prop">status</span>: 400 });
+  }
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> <span class="prop">newMember</span> = <span class="kw">await</span> <span class="type">prisma</span>.<span class="fn">$transaction</span>(<span class="kw">async</span> (<span class="prop">tx</span>) =&gt; {
+      <span class="comment">// 1. Lock and count existing allocated seats for this parent account</span>
+      <span class="kw">const</span> <span class="prop">allocatedSeats</span> = <span class="kw">await</span> <span class="prop">tx</span>.<span class="type">user</span>.<span class="fn">count</span>({
+        <span class="prop">where</span>: {
+          <span class="prop">parentId</span>: <span class="prop">session</span>.<span class="prop">user</span>.<span class="prop">id</span>,
+          <span class="prop">role</span>: <span class="str">'TEAM_MEMBER'</span>,
+        },
+      });
+
+      <span class="kw">if</span> (<span class="prop">allocatedSeats</span> &gt;= <span class="prop">MAX_TEAM_SEATS</span>) {
+        <span class="kw">throw new</span> <span class="type">Error</span>(<span class="str">'LIMIT_EXCEEDED_5_SEATS_MAX'</span>);
+      }
+
+      <span class="comment">// 2. Deduplication check</span>
+      <span class="kw">const</span> <span class="prop">exists</span> = <span class="kw">await</span> <span class="prop">tx</span>.<span class="type">user</span>.<span class="fn">findUnique</span>({ <span class="prop">where</span>: { <span class="prop">email</span> } });
+      <span class="kw">if</span> (<span class="prop">exists</span>) {
+        <span class="kw">throw new</span> <span class="type">Error</span>(<span class="str">'EMAIL_ALREADY_REGISTERED'</span>);
+      }
+
+      <span class="comment">// 3. Secure Hash and Provision</span>
+      <span class="kw">const</span> <span class="prop">passwordHash</span> = <span class="kw">await</span> <span class="prop">bcrypt</span>.<span class="fn">hash</span>(<span class="prop">password</span>, 12);
+
+      <span class="kw">return await</span> <span class="prop">tx</span>.<span class="type">user</span>.<span class="fn">create</span>({
+        <span class="prop">data</span>: {
+          <span class="prop">name</span>,
+          <span class="prop">email</span>,
+          <span class="prop">passwordHash</span>,
+          <span class="prop">role</span>: <span class="str">'TEAM_MEMBER'</span>,
+          <span class="prop">status</span>: <span class="str">'APPROVED'</span>,
+          <span class="prop">parentId</span>: <span class="prop">session</span>.<span class="prop">user</span>.<span class="prop">id</span>,
+        },
+        <span class="prop">select</span>: {
+          <span class="prop">id</span>: <span class="kw">true</span>,
+          <span class="prop">name</span>: <span class="kw">true</span>,
+          <span class="prop">email</span>: <span class="kw">true</span>,
+          <span class="prop">role</span>: <span class="kw">true</span>,
+          <span class="prop">status</span>: <span class="kw">true</span>,
+          <span class="prop">createdAt</span>: <span class="kw">true</span>,
+        },
+      });
+    }, {
+      <span class="prop">isolationLevel</span>: <span class="str">'Serializable'</span>,
+      <span class="prop">maxWait</span>: 5000,
+      <span class="prop">timeout</span>: 10000,
+    });
+
+    <span class="kw">return</span> <span class="type">NextResponse</span>.<span class="fn">json</span>({ <span class="prop">data</span>: <span class="prop">newMember</span>, <span class="prop">success</span>: <span class="kw">true</span> }, { <span class="prop">status</span>: 201 });
+  } <span class="kw">catch</span> (<span class="prop">err</span>: <span class="type">any</span>) {
+    <span class="kw">if</span> (<span class="prop">err</span>.<span class="prop">message</span> === <span class="str">'LIMIT_EXCEEDED_5_SEATS_MAX'</span>) {
+      <span class="kw">return</span> <span class="type">NextResponse</span>.<span class="fn">json</span>({ <span class="prop">error</span>: <span class="str">'Tier Cap: Maximum 5 team members permitted per account'</span> }, { <span class="prop">status</span>: 400 });
+    }
+    <span class="kw">return</span> <span class="type">NextResponse</span>.<span class="fn">json</span>({ <span class="prop">error</span>: <span class="prop">err</span>.<span class="prop">message</span> || <span class="str">'INTERNAL_SERVER_ERROR'</span> }, { <span class="prop">status</span>: 500 });
+  }
+}</pre>
+</div>
+</section>
+<!-- Module B: NextAuth Status Guard Route & Callback Handler -->
+<section class="glass-card rounded-2xl overflow-hidden border border-slate-800/80 shadow-xl flex flex-col">
+<div class="px-5 py-3.5 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-emerald-400 text-[18px]">verified_user</span>
+<div>
+<span class="font-mono text-xs font-semibold text-white">/lib/auth.ts (NextAuth Configuration)</span>
+<span class="ml-2 text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">STATUS GATED</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5">
+<button class="px-2.5 py-1 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-mono text-slate-200 flex items-center gap-1.5 transition-colors cursor-pointer" onclick="copySnippet('auth-code-block', 'auth-btn-label')">
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+<span id="auth-btn-label">Copy</span>
+</button>
+<button class="p-1 rounded-md bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-300 border border-slate-700 text-slate-300 transition-colors cursor-pointer" onclick="downloadArchitectureFile('nextauth')" title="Download auth.ts">
+<span class="material-symbols-outlined text-[14px]">file_download</span>
+</button>
+</div>
+</div>
+<div class="p-3 bg-slate-950/40 border-b border-slate-800/60 text-xs text-slate-400 font-sans">
+          Rejects sessions if account is in PENDING or REJECTED state, injecting role, tenant parentId, and carrier API credentials into the signed JWT token.
+        </div>
+<div class="p-4 bg-[#020617]/95 overflow-x-auto max-h-[420px]">
+<pre class="font-mono text-xs leading-relaxed code-syntax select-all" id="auth-code-block"><span class="kw">import</span> <span class="type">NextAuth</span>, { <span class="type">NextAuthOptions</span> } <span class="kw">from</span> <span class="str">'next-auth'</span>;
+<span class="kw">import</span> <span class="type">CredentialsProvider</span> <span class="kw">from</span> <span class="str">'next-auth/providers/credentials'</span>;
+<span class="kw">import</span> { <span class="type">prisma</span> } <span class="kw">from</span> <span class="str">'@/lib/prisma'</span>;
+<span class="kw">import</span> <span class="prop">bcrypt</span> <span class="kw">from</span> <span class="str">'bcryptjs'</span>;
+
+<span class="kw">export const</span> <span class="prop">authOptions</span>: <span class="type">NextAuthOptions</span> = {
+  <span class="prop">session</span>: { <span class="prop">strategy</span>: <span class="str">'jwt'</span>, <span class="prop">maxAge</span>: 30 * 24 * 60 * 60 },
+  <span class="prop">pages</span>: {
+    <span class="prop">signIn</span>: <span class="str">'/auth/login'</span>,
+    <span class="prop">error</span>: <span class="str">'/auth/status-pending'</span>,
+  },
+  <span class="prop">providers</span>: [
+    <span class="fn">CredentialsProvider</span>({
+      <span class="prop">name</span>: <span class="str">'Credentials'</span>,
+      <span class="prop">credentials</span>: {
+        <span class="prop">email</span>: { <span class="prop">label</span>: <span class="str">'Email'</span>, <span class="prop">type</span>: <span class="str">'email'</span> },
+        <span class="prop">password</span>: { <span class="prop">label</span>: <span class="str">'Password'</span>, <span class="prop">type</span>: <span class="str">'password'</span> },
+      },
+      <span class="kw">async</span> <span class="fn">authorize</span>(<span class="prop">credentials</span>) {
+        <span class="kw">if</span> (!<span class="prop">credentials</span>?.<span class="prop">email</span> || !<span class="prop">credentials</span>?.<span class="prop">password</span>) <span class="kw">return null</span>;
+
+        <span class="kw">const</span> <span class="prop">user</span> = <span class="kw">await</span> <span class="type">prisma</span>.<span class="type">user</span>.<span class="fn">findUnique</span>({
+          <span class="prop">where</span>: { <span class="prop">email</span>: <span class="prop">credentials</span>.<span class="prop">email</span> },
+        });
+
+        <span class="kw">if</span> (!<span class="prop">user</span> || !(<span class="kw">await</span> <span class="prop">bcrypt</span>.<span class="fn">compare</span>(<span class="prop">credentials</span>.<span class="prop">password</span>, <span class="prop">user</span>.<span class="prop">passwordHash</span>))) {
+          <span class="kw">throw new</span> <span class="type">Error</span>(<span class="str">'INVALID_CREDENTIALS'</span>);
+        }
+
+        <span class="comment">// STRICT STATUS GATE: Block access if pending admin review</span>
+        <span class="kw">if</span> (<span class="prop">user</span>.<span class="prop">status</span> === <span class="str">'PENDING'</span>) {
+          <span class="kw">throw new</span> <span class="type">Error</span>(<span class="str">'ACCOUNT_PENDING_APPROVAL'</span>);
+        }
+        <span class="kw">if</span> (<span class="prop">user</span>.<span class="prop">status</span> === <span class="str">'REJECTED'</span>) {
+          <span class="kw">throw new</span> <span class="type">Error</span>(<span class="str">'ACCOUNT_ACCESS_REVOKED'</span>);
+        }
+
+        <span class="kw">return</span> {
+          <span class="prop">id</span>: <span class="prop">user</span>.<span class="prop">id</span>,
+          <span class="prop">email</span>: <span class="prop">user</span>.<span class="prop">email</span>,
+          <span class="prop">name</span>: <span class="prop">user</span>.<span class="prop">name</span>,
+          <span class="prop">role</span>: <span class="prop">user</span>.<span class="prop">role</span>,
+          <span class="prop">status</span>: <span class="prop">user</span>.<span class="prop">status</span>,
+          <span class="prop">apiKey</span>: <span class="prop">user</span>.<span class="prop">apiKey</span>,
+        };
+      },
+    }),
+  ],
+  <span class="prop">callbacks</span>: {
+    <span class="kw">async</span> <span class="fn">jwt</span>({ <span class="prop">token</span>, <span class="prop">user</span> }) {
+      <span class="kw">if</span> (<span class="prop">user</span>) {
+        <span class="prop">token</span>.<span class="prop">id</span> = <span class="prop">user</span>.<span class="prop">id</span>;
+        <span class="prop">token</span>.<span class="prop">role</span> = (<span class="prop">user</span> <span class="kw">as any</span>).<span class="prop">role</span>;
+        <span class="prop">token</span>.<span class="prop">status</span> = (<span class="prop">user</span> <span class="kw">as any</span>).<span class="prop">status</span>;
+        <span class="prop">token</span>.<span class="prop">apiKey</span> = (<span class="prop">user</span> <span class="kw">as any</span>).<span class="prop">apiKey</span>;
+      }
+      <span class="kw">return</span> <span class="prop">token</span>;
+    },
+    <span class="kw">async</span> <span class="fn">session</span>({ <span class="prop">session</span>, <span class="prop">token</span> }) {
+      <span class="kw">if</span> (<span class="prop">session</span>.<span class="prop">user</span>) {
+        (<span class="prop">session</span>.<span class="prop">user</span> <span class="kw">as any</span>).<span class="prop">id</span> = <span class="prop">token</span>.<span class="prop">id</span>;
+        (<span class="prop">session</span>.<span class="prop">user</span> <span class="kw">as any</span>).<span class="prop">role</span> = <span class="prop">token</span>.<span class="prop">role</span>;
+        (<span class="prop">session</span>.<span class="prop">user</span> <span class="kw">as any</span>).<span class="prop">status</span> = <span class="prop">token</span>.<span class="prop">status</span>;
+        (<span class="prop">session</span>.<span class="prop">user</span> <span class="kw">as any</span>).<span class="prop">apiKey</span> = <span class="prop">token</span>.<span class="prop">apiKey</span>;
+      }
+      <span class="kw">return</span> <span class="prop">session</span>;
+    },
+  },
+};</pre>
+</div>
+</section>
+</div>
+<!-- Section 4: Architecture Topology Flow (Dark Neon Glass Rendering) -->
+<section class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800/80 shadow-2xl space-y-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-cyan-400 text-[20px]">account_tree</span>
+<h2 class="text-xl font-display font-bold text-white">Full-Duplex Pipeline Topology</h2>
+</div>
+<p class="text-xs sm:text-sm text-slate-400 font-sans">
+            Carrier SMPP v3.4 submit stream combined with asynchronous reverse DLR webhook reconciliation into PostgreSQL.
+          </p>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+<span>PIPELINE HEALTH: 99.998%</span>
+</span>
+</div>
+</div>
+<!-- Vector Architecture Flow Map -->
+<div class="p-4 sm:p-6 rounded-xl bg-slate-950/70 border border-slate-800 flex justify-center overflow-x-auto">
+<svg class="w-full max-w-4xl h-auto min-w-[700px]" fill="none" viewbox="0 0 880 230" xmlns="http://www.w3.org/2000/svg">
+<!-- Flow Lines -->
+<path d="M 170 85 L 260 85" stroke="#334155" stroke-dasharray="4 4" stroke-width="2"></path>
+<path d="M 400 85 L 490 85" stroke="#10b981" stroke-width="2.5"></path>
+<path d="M 630 85 L 710 85" stroke="#06b6d4" stroke-width="2.5"></path>
+<path d="M 770 135 C 770 195, 330 195, 330 135" stroke="#10b981" stroke-dasharray="6 6" stroke-width="2"></path>
+<!-- Arrows -->
+<polygon fill="#10b981" points="490,85 480,80 480,90"></polygon>
+<polygon fill="#06b6d4" points="710,85 700,80 700,90"></polygon>
+<polygon fill="#10b981" points="330,135 325,145 335,145"></polygon>
+<!-- Node 1: Next.js 14 App Client -->
+<rect fill="#0f172a" height="95" rx="8" stroke="#334155" stroke-width="1.5" width="150" x="20" y="40"></rect>
+<rect fill="#1e293b" height="24" rx="6" width="150" x="20" y="40"></rect>
+<text fill="#38bdf8" font-family="Space Grotesk" font-size="11" font-weight="700" x="30" y="56">1. APP ROUTER</text>
+<text fill="#e2e8f0" font-family="Inter" font-size="11" x="30" y="80">Server Action Entry</text>
+<text fill="#94a3b8" font-family="Inter" font-size="10" x="30" y="98">NextAuth Session Gated</text>
+<text fill="#10b981" font-family="JetBrains Mono" font-size="9" x="30" y="118">Latency &lt; 4ms</text>
+<!-- Node 2: Prisma Connection Pool -->
+<rect fill="#0f172a" height="95" rx="8" stroke="#10b981" stroke-width="1.5" width="140" x="260" y="40"></rect>
+<rect fill="#1e293b" height="24" rx="6" width="140" x="260" y="40"></rect>
+<text fill="#10b981" font-family="Space Grotesk" font-size="11" font-weight="700" x="270" y="56">2. PRISMA POOL</text>
+<text fill="#e2e8f0" font-family="Inter" font-size="11" x="270" y="80">PostgreSQL (64 Pool)</text>
+<text fill="#94a3b8" font-family="Inter" font-size="10" x="270" y="98">Serializable Lock</text>
+<text fill="#38bdf8" font-family="JetBrains Mono" font-size="9" x="270" y="118">5-Seat Cap Enforced</text>
+<!-- Node 3: Telecom SMPP Gateway -->
+<rect fill="#0f172a" height="95" rx="8" stroke="#06b6d4" stroke-width="1.5" width="140" x="490" y="40"></rect>
+<rect fill="#1e293b" height="24" rx="6" width="140" x="490" y="40"></rect>
+<text fill="#06b6d4" font-family="Space Grotesk" font-size="11" font-weight="700" x="500" y="56">3. SMPP GATEWAY</text>
+<text fill="#e2e8f0" font-family="Inter" font-size="11" x="500" y="80">SMPP v3.4 Multiplex</text>
+<text fill="#94a3b8" font-family="Inter" font-size="10" x="500" y="98">SUBMIT_SM Dispatch</text>
+<text fill="#10b981" font-family="JetBrains Mono" font-size="9" x="500" y="118">Carrier Binds Active</text>
+<!-- Node 4: Tier-1 Carriers -->
+<rect fill="#0f172a" height="95" rx="8" stroke="#334155" stroke-width="1.5" width="150" x="710" y="40"></rect>
+<rect fill="#1e293b" height="24" rx="6" width="150" x="710" y="40"></rect>
+<text fill="#f1f5f9" font-family="Space Grotesk" font-size="11" font-weight="700" x="720" y="56">4. TIER-1 TELCO</text>
+<text fill="#e2e8f0" font-family="Inter" font-size="11" x="720" y="80">SS7 / Diameter Route</text>
+<text fill="#94a3b8" font-family="Inter" font-size="10" x="720" y="98">Handset Termination</text>
+<text fill="#10b981" font-family="JetBrains Mono" font-size="9" x="720" y="118">DELIVRD Receipts</text>
+<!-- Loopback Text -->
+<text fill="#10b981" font-family="JetBrains Mono" font-size="10" font-weight="600" text-anchor="middle" x="530" y="210">ASYNCHRONOUS DLR LOOP • ATOMIC INCREMENT totalDelivered + Payouts</text>
+</svg>
+</div>
+</section>
+<!-- Download Modal / Toast Trigger Simulation -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 pointer-events-none" id="download-toast">
+<div class="glass-card px-5 py-4 rounded-xl border border-emerald-500/40 text-slate-200 flex items-center gap-3 shadow-[0_10px_30px_rgba(16,185,129,0.3)]">
+<span class="material-symbols-outlined text-emerald-400 text-[24px]">task_alt</span>
+<div class="flex flex-col">
+<span class="font-display font-bold text-sm text-white" id="toast-title">Download Started!</span>
+<span class="text-xs text-slate-300 font-mono" id="toast-filename">revo-panel-complete-architecture.json</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Revo Panel Luxury Sticky Footer (Requested Item #4: Strictly displaying © Hani 20226. All rights reserved.) -->
+<footer class="w-full bg-[#020617] border-t border-slate-800/90 py-6 px-4 sm:px-8 mt-12">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="h-7 w-7 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[16px]">shield</span>
+</div>
+<span class="text-xs font-mono text-slate-400 tracking-wide">
+          © Hani 20226. All rights reserved.
+        </span>
+</div>
+<div class="flex flex-wrap items-center gap-4 text-xs font-mono text-slate-400">
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-900 border border-slate-800">
+<span class="material-symbols-outlined text-emerald-400 text-[14px]">lock</span>
+<span>ISO/IEC 27001 AUDITED</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-900 border border-slate-800">
+<span class="material-symbols-outlined text-cyan-400 text-[14px]">router</span>
+<span>SMPP v3.4 TELECOM GRADE</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-900 border border-slate-800">
+<span class="material-symbols-outlined text-emerald-400 text-[14px]">verified</span>
+<span>GDPR ENCRYPTED</span>
+</div>
+</div>
+</div>
+</footer>
+<!-- Scripts for Snippet Copy & Architecture Pack Generation -->
+<script>
+    // Copy Snippet Utility
+    function copySnippet(elementId, labelId) {
+      const codeEl = document.getElementById(elementId);
+      if (!codeEl) return;
+      const textToCopy = codeEl.innerText;
+
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        const label = document.getElementById(labelId);
+        if (label) {
+          const original = label.innerText;
+          label.innerText = 'Copied to Clipboard!';
+          setTimeout(() => {
+            label.innerText = original;
+          }, 2000);
+        }
+      });
+    }
+
+    // Unified download utility with Blob creation & real HTML <a> click dispatch
+    window.downloadArchitectureFile = function(type) {
+      let content = "";
+      let filename = "download.txt";
+      let mimeType = "text/plain;charset=utf-8";
+
+      const prismaRaw = document.getElementById('prisma-spec-code') 
+        ? document.getElementById('prisma-spec-code').innerText 
+        : `// Hani SMS Prisma Specification\nmodel User { id String @id }`;
+      
+      const teamRaw = document.getElementById('team-code-block')
+        ? document.getElementById('team-code-block').innerText
+        : `export async function POST() {}`;
+
+      const authRaw = document.getElementById('auth-code-block')
+        ? document.getElementById('auth-code-block').innerText
+        : `export const authOptions = {};`;
+
+      const auditLoggerRaw = `// HANI SMS REVO PANEL - AUDIT LOGGER MODULE\nimport { prisma } from './prisma';\n\nexport async function logSecurityEvent(userId, action, metadata = {}, ipAddress = null) {\n  return await prisma.auditLog.create({\n    data: {\n      userId,\n      action,\n      metadata,\n      ipAddress,\n      createdAt: new Date()\n    }\n  });\n}\n\nexport default { logSecurityEvent };`;
+
+      const tauriConfigRaw = JSON.stringify({
+        "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+        "build": {
+          "beforeDevCommand": "npm run dev",
+          "beforeBuildCommand": "npm run build",
+          "devPath": "http://localhost:3000",
+          "distDir": "../out"
+        },
+        "package": {
+          "productName": "Hani Revo Panel Carrier Terminal",
+          "version": "4.12.0"
+        },
+        "tauri": {
+          "bundle": {
+            "active": true,
+            "category": "DeveloperTool",
+            "identifier": "com.hanisms.revopanel"
+          },
+          "windows": [{
+            "title": "Hani SMS Revo Panel",
+            "width": 1440,
+            "height": 900,
+            "resizable": true,
+            "fullscreen": false
+          }]
+        }
+      }, null, 2);
+
+      const capacitorConfigRaw = JSON.stringify({
+        "appId": "com.hanisms.revopanel",
+        "appName": "Hani SMS Revo Panel",
+        "webDir": "out",
+        "bundledWebRuntime": false,
+        "server": {
+          "androidScheme": "https"
+        }
+      }, null, 2);
+
+      if (type === 'prisma') {
+        content = prismaRaw;
+        filename = "prisma-schema.prisma";
+        mimeType = "text/x-prisma;charset=utf-8";
+      } else if (type === 'nextauth') {
+        content = authRaw;
+        filename = "auth-guard.ts";
+        mimeType = "text/typescript;charset=utf-8";
+      } else if (type === 'teamRoute') {
+        content = teamRaw;
+        filename = "route-team-atomic.ts";
+        mimeType = "text/typescript;charset=utf-8";
+      } else if (type === 'audit') {
+        content = auditLoggerRaw;
+        filename = "audit-logger.js";
+        mimeType = "application/javascript;charset=utf-8";
+      } else if (type === 'bundle' || type === 'all') {
+        const completeArchitecture = {
+          projectName: "Hani SMS Revo Panel",
+          version: "4.12.0",
+          generatedTimestamp: new Date().toISOString(),
+          compliance: ["ISO/IEC 27001", "SMPP v3.4", "GDPR"],
+          teamPolicy: {
+            maximumSeatsPerParentAccount: 5,
+            concurrencyControl: "PostgreSQL Serializable Isolation"
+          },
+          files: {
+            "prisma/schema.prisma": prismaRaw,
+            "lib/auth.ts": authRaw,
+            "app/api/admin/team/route.ts": teamRaw,
+            "lib/audit-logger.js": auditLoggerRaw,
+            "src-tauri/tauri.conf.json": JSON.parse(tauriConfigRaw),
+            "capacitor.config.json": JSON.parse(capacitorConfigRaw),
+            "config/smpp.config.json": {
+              smppVersion: "3.4",
+              throughputSmsPerSec: 2500,
+              autoReconnect: true,
+              dlrWebhookEndpoint: "https://api.hanisms.net/api/v1/dlr/webhook",
+              maxSeatsPerAccount: 5
+            }
+          }
+        };
+        content = JSON.stringify(completeArchitecture, null, 2);
+        filename = "revo-panel-complete-architecture.json";
+        mimeType = "application/json;charset=utf-8";
+      }
+
+      // Execute browser-side native download using Blob
+      const blob = new Blob([content], { type: mimeType });
+      const downloadUrl = URL.createObjectURL(blob);
+      const tempAnchor = document.createElement('a');
+      tempAnchor.style.display = 'none';
+      tempAnchor.href = downloadUrl;
+      tempAnchor.setAttribute('download', filename);
+
+      document.body.appendChild(tempAnchor);
+      tempAnchor.click();
+
+      setTimeout(() => {
+        document.body.removeChild(tempAnchor);
+        URL.revokeObjectURL(downloadUrl);
+      }, 200);
+
+      triggerToast(`Download started: ${filename}`);
+    };
+
+    // Legacy alias to ensure compatibility with all triggers
+    function downloadCodebasePack() {
+      window.downloadArchitectureFile('all');
+    }
+
+    function downloadSingleFile(filename) {
+      if (filename && filename.includes('prisma')) {
+        window.downloadArchitectureFile('prisma');
+      } else {
+        window.downloadArchitectureFile('all');
+      }
+    }
+
+    function triggerToast(message) {
+      const toast = document.getElementById('download-toast');
+      const filenameLabel = document.getElementById('toast-filename');
+      const titleLabel = document.getElementById('toast-title');
+      
+      if (filenameLabel) filenameLabel.innerText = message;
+      if (titleLabel) titleLabel.innerText = "Carrier Engine Asset Triggered";
+
+      toast.classList.remove('translate-y-32', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-32', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 3500);
+    }
+  </script>
+</body></html>
